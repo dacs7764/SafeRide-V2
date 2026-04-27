@@ -1,0 +1,1118 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.6;
+}
+
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar Styles */
+.navbar {
+  background-color: #2F3691;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+  padding: 0 4rem;
+}
+
+.logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.nav-logo {
+  height: 100px;
+  width: auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Styling for the button elements in the navigation (Accessibility fix) */
+.nav-links button { 
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  font-weight: 500;
+}
+
+.nav-links button.active {
+  background-color: #000;
+}
+
+.nav-links button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  text-decoration: none;
+}
+
+/* Hero Section */
+.hero {
+  background-color: #C9DCFF;
+  padding: 4rem 6rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4rem;
+}
+
+.hero-content {
+  flex: 1.5;
+}
+
+.hero-content h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  color: #2F3691;
+}
+
+.hero-content p {
+  font-size: 1.25rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+/* Styles for all quote buttons */
+.quote-btn {
+  background-color: #2F3691;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.quote-btn:hover {
+  background-color: #000;
+  transform: translateY(-1px);
+}
+
+/* Class for the large Hero button */
+.quote-btn.large {
+  padding: 1rem 2.5rem;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.logo-container {
+  flex: 1;
+  max-width: 550px;
+  padding: 0;
+  background: transparent;
+  display: inline-block;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.main-logo {
+  display: block;       
+  width: 100%;
+  height: auto;
+}
+
+/* Routes Section */
+.routes-section {
+  padding: 4rem 6rem;
+}
+
+.routes-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #2F3691;
+}
+
+.routes-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+}
+
+.routes-list {
+  flex: 1.4;
+}
+
+.route-item {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed #ddd;
+}
+
+.route-item:last-child {
+  border-bottom: none;
+}
+
+.route-item h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #000;
+}
+
+.price {
+  font-size: 1.2rem;
+  color: #2F3691;
+  font-weight: bold;
+  margin: 0.5rem 0;
+  display: block;
+}
+
+.routes-list > .quote-btn {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 2rem auto 0;
+  background-color: #000;
+}
+
+.routes-list > .quote-btn:hover {
+  background-color: #333;
+}
+
+.map-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.map-image {
+  width: 100%;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+/* About Section */
+.about-section {
+  padding: 4rem 6rem;
+  background-color: #f7f9fc;
+  border-top: 5px solid #C9DCFF;
+}
+
+.about-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #2F3691;
+}
+
+.about-container {
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+}
+
+.about-text {
+  flex: 3;
+}
+
+.about-text p {
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.about-image {
+  flex: 2;
+}
+
+.bus-image {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 4rem 6rem;
+  background-color: #C9DCFF;
+}
+
+.testimonials-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #2F3691;
+}
+
+.testimonials-container {
+  display: flex;
+  gap: 3rem;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  flex: 1;
+  padding: 2rem;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-5px);
+}
+
+.testimonial-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-style: italic;
+  color: #000;
+  border-bottom: 2px solid #C9DCFF;
+  padding-bottom: 0.5rem;
+}
+
+.testimonial-card p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    color: #444;
+}
+
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.profile-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 1.25rem;
+  border: 3px solid #2F3691;
+  transform: translateY(3px); 
+}
+
+.author-info h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.author-info p {
+  margin: 0;
+  color: #2F3691;
+  font-size: 0.95rem;
+  font-style: normal;
+}
+
+/* Footer */
+footer {
+  background-color: #2F3691;
+  padding: 1.5rem;
+  text-align: center;
+  color: white;
+  margin-top: auto;
+  font-size: 0.9rem;
+}
+
+
+/* --- BOOKING CALCULATOR STYLES --- */
+
+.booking-page-wrapper {
+    padding: 3rem 6rem;
+    background-color: #f7f9fc;
+    min-height: calc(100vh - 70px - 53px); 
+}
+
+.booking-page-header {
+    text-align: center;
+    font-size: 2.5rem; 
+    color: #2F3691;
+    margin-bottom: 2.5rem;
+    border-bottom: 3px solid #C9DCFF;
+    padding-bottom: 0.75rem;
+}
+
+.booking-container {
+    display: flex;
+    gap: 2rem; 
+    max-width: 1100px; 
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    min-height: 500px;
+}
+
+.calculator-panel {
+    flex: 1;
+    padding: 2.5rem; 
+    background-color: #ffffff;
+    border-radius: 12px 0 0 12px;
+}
+
+.quote-results-panel {
+    flex: 1;
+    padding: 2.5rem;
+    background-color: #e6efff;
+    border-radius: 0 12px 12px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+}
+
+.panel-title {
+    font-size: 1.6rem; 
+    color: #2F3691;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(47, 54, 145, 0.2);
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 1rem; 
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.4rem;
+    color: #2F3691;
+    font-size: 0.95rem;
+}
+
+.form-group input, 
+.form-group select {
+    width: 100%;
+    padding: 0.6rem; 
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    border-color: #2F3691;
+    box-shadow: 0 0 0 3px rgba(47, 54, 145, 0.2);
+    outline: none;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.form-group.half-width {
+    flex: 1;
+}
+
+/* Quote Button for Calculator */
+.calculator-panel .quote-btn {
+    width: 100%;
+    padding: 0.9rem;
+    font-size: 1.05rem;
+    margin-top: 1.5rem;
+    background-color: #2F3691;
+}
+
+.calculator-panel .quote-btn:hover {
+    background-color: #000;
+}
+
+.error-message {
+    color: #e53e3e;
+    font-weight: bold;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    background-color: #fef2f2;
+}
+
+/* Quote Display */
+.quote-display {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+}
+
+.quote-price-label {
+    font-size: 1.1rem;
+    color: #2F3691;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.quote-price {
+    font-size: 3rem; 
+    font-weight: 800;
+    color: #000;
+    line-height: 1;
+    margin-bottom: 1rem;
+}
+
+.quote-price .currency {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2F3691;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+.quote-total-line {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 1.25rem;
+}
+
+.quote-details {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 8px;
+    text-align: left;
+    width: 100%;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.quote-details p {
+    margin: 0.4rem 0;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.book-btn {
+    width: 90%;
+    padding: 0.9rem;
+    font-size: 1.1rem;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: background-color 0.2s;
+}
+
+.book-btn:hover {
+    background-color: #2F3691;
+}
+
+
+/* Map Placeholder */
+.map-placeholder-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100%;
+    min-height: 300px;
+    padding: 1rem;
+}
+
+.map-preview-image {
+    width: 80%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+}
+
+.preview-message {
+    color: #2F3691;
+    font-style: italic;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Schedule & Payment (Step 2 & 3 Containers) */
+.schedule-payment-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.back-link {
+    color: #2F3691;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    transition: color 0.2s;
+    display: inline-block;
+}
+
+.back-link:hover {
+    color: #000;
+}
+
+.schedule-details {
+    display: flex;
+    gap: 2rem;
+}
+
+.detail-card {
+    flex: 1;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f7f9fc;
+}
+
+.detail-card h3 {
+    color: #2F3691;
+    border-bottom: 1px dashed #C9DCFF;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.detail-card p {
+    margin: 0.75rem 0;
+}
+
+.final-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #000;
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ddd;
+}
+
+.payment-placeholder-card {
+    flex: 1.5;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.payment-placeholder-card h3 {
+    color: #000;
+    border-bottom: 2px solid #2F3691;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.payment-placeholder-card .subtext {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+/* Calendly Link Button */
+.calendly-link-btn {
+    display: block;
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    background-color: #0070b8; /* Calendly Blue */
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: bold;
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+}
+
+.calendly-link-btn:hover {
+    background-color: #005a96;
+}
+
+/* Polished button shared by Calendly + Proceed buttons in the schedule step */
+.pretty-btn {
+    display: inline-block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1rem 1.5rem;
+    margin-top: 1rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+    box-shadow: 0 6px 16px rgba(47, 54, 145, 0.18);
+}
+
+a.calendly-link-btn.pretty-btn {
+    background: linear-gradient(135deg, #0070b8 0%, #005a96 100%);
+    color: #fff;
+}
+
+a.calendly-link-btn.pretty-btn:hover {
+    background: linear-gradient(135deg, #0080d0 0%, #006bb0 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(0, 112, 184, 0.28);
+}
+
+button.book-btn.pretty-btn {
+    background: linear-gradient(135deg, #2F3691 0%, #1c2270 100%);
+    color: #fff;
+    width: 100%;
+}
+
+button.book-btn.pretty-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg, #3a44b8 0%, #252b85 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(47, 54, 145, 0.32);
+}
+
+button.book-btn.pretty-btn:disabled {
+    background: #c7c9d6;
+    color: #f3f3f7;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+    opacity: 0.85;
+}
+
+/* Status pills above the proceed button */
+.schedule-status {
+    text-align: center;
+    font-weight: 600;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    display: block;
+}
+
+.schedule-status-locked {
+    background: #fff3cd;
+    color: #8a6d00;
+    border: 1px solid #ffe69c;
+}
+
+.schedule-status-ready {
+    background: #e2f5e8;
+    color: #1f6f3b;
+    border: 1px solid #b8e2c4;
+}
+
+.schedule-card {
+    background: linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%);
+    border: 1px solid #e1e3f0;
+    box-shadow: 0 6px 20px rgba(47, 54, 145, 0.06);
+}
+
+/* 3% card-fee disclosure under the Total Cost */
+.card-fee-note {
+    margin-top: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    background: #fff8e6;
+    border-left: 3px solid #f0b000;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    color: #6b5300;
+    line-height: 1.35;
+}
+
+/* Email capture form on the in-person confirmation step */
+.email-capture-form {
+    border: 1px solid #e1e3f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%);
+    border-radius: 10px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 14px rgba(47, 54, 145, 0.06);
+    text-align: left;
+}
+
+.email-capture-form h4 {
+    margin: 0 0 0.5rem 0;
+    color: #2F3691;
+}
+
+.email-capture-form label {
+    display: block;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    margin-bottom: 0.35rem;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.email-capture-form input[type="email"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.75rem 0.9rem;
+    font-size: 1rem;
+    border: 1px solid #cfd2e3;
+    border-radius: 8px;
+    background: #fff;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.email-capture-form input[type="email"]:focus {
+    outline: none;
+    border-color: #2F3691;
+    box-shadow: 0 0 0 3px rgba(47, 54, 145, 0.15);
+}
+
+/* Side-by-side Return / Close Tab buttons on confirmation */
+.confirmation-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.confirmation-actions .book-btn {
+    flex: 1;
+    width: auto;
+    min-width: 0;
+}
+
+.close-tab-btn {
+    background-color: #2F3691 !important;
+}
+
+.close-tab-btn:hover {
+    background-color: #1c2270 !important;
+}
+
+.cancel-booking-btn {
+    background-color: #b3261e !important;
+}
+
+.cancel-booking-btn:hover {
+    background-color: #8c1a14 !important;
+}
+
+.close-tab-hint {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: #8a6d00;
+    background: #fff8e6;
+    border-left: 3px solid #f0b000;
+    padding: 0.5rem 0.75rem;
+    border-radius: 4px;
+}
+
+/* Calendly inline embed wrapper */
+.calendly-inline-target {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e1e3f0;
+    box-shadow: 0 4px 14px rgba(47, 54, 145, 0.06);
+}
+
+/* Disabled "Pay Online" option + Coming Soon badge */
+.payment-option-btn.payment-option-disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: #f5f6fa;
+    filter: grayscale(40%);
+}
+
+.payment-option-btn.payment-option-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.coming-soon-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: #2F3691;
+    color: #fff;
+    border-radius: 999px;
+    vertical-align: middle;
+}
+
+
+/* Square Placeholder (Step 3) */
+.square-placeholder {
+    border: 2px dashed #2F3691;
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    background-color: #C9DCFF;
+    margin-bottom: 1rem;
+}
+
+.square-form-mock {
+    background-color: white;
+    padding: 1rem;
+    border-radius: 6px;
+    border: 1px solid #2F3691;
+}
+
+/* Styles for the fields injected by the Square SDK */
+/* These styles ensure the secure iframe boxes are visible */
+#sq-card-number, #sq-expiration-date, #sq-cvv, #sq-postal-code {
+    background-color: white;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    height: 35px;
+}
+
+
+.square-pay-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #0070b8;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.square-pay-btn:hover {
+    background-color: #005a96;
+}
+
+.back-home-btn {
+    display: block;
+    width: 250px;
+    margin: 3rem auto 0;
+    padding: 0.75rem;
+    background-color: #aaa;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.back-home-btn:hover {
+    background-color: #666;
+}
+
+/* Payment Method Selection Styles */
+.payment-method-selection-card {
+    flex: 1.5;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.payment-method-selection-card h3 {
+    color: #000;
+    border-bottom: 2px solid #2F3691;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.payment-method-selection-card .subtext {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.payment-method-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-option-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+}
+
+.payment-option-btn:hover {
+    border-color: #2F3691;
+    background-color: #e6efff;
+    transform: translateX(5px);
+}
+
+.payment-option-icon {
+    font-size: 2.5rem;
+    min-width: 60px;
+    text-align: center;
+}
+
+.payment-option-text {
+    flex: 1;
+}
+
+.payment-option-text strong {
+    display: block;
+    color: #000;
+    margin-bottom: 0.25rem;
+    font-size: 1.05rem;
+}
+
+.payment-option-text p {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* In-Person Payment Confirmation */
+.in-person-payment-confirmation {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.confirmation-box {
+    background-color: #f0f9ff;
+    border: 2px solid #2F3691;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.confirmation-box h4 {
+    color: #2F3691;
+    font-size: 1.3rem;
+    margin-bottom: 0.75rem;
+}
+
+.confirmation-box p {
+    color: #333;
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.confirmation-details {
+    font-size: 0.9rem;
+    color: #666;
+    margin-top: 0.5rem;
+}
+
+.confirmation-btn {
+    width: 100%;
+}
+/* Location Search Styles */
+.location-search-container {
+    position: relative;
+}
+
+.location-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.location-input:focus {
+    border-color: #2F3691;
+    box-shadow: 0 0 0 3px rgba(47, 54, 145, 0.2);
+    outline: none;
+}
+
+.location-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.loading-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2F3691;
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.pac-container {
+    z-index: 9999 !important;
+}
+
+.location-search-container {
+    position: relative;
+}
+
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+    z-index: 1000;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.suggestion-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f3ff;
+}
+
+.suggestion-address {
+    font-size: 0.92rem;
+    color: #222;
+    font-weight: 500;
+}
+
+.suggestion-type {
+    font-size: 0.75rem;
+    color: #888;
+    text-transform: capitalize;
+}
