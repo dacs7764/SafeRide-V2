@@ -20,6 +20,32 @@ const CALENDLY_URL = 'https://calendly.com/hirschpaula88/30min';
 
 // Prices live in ./pricing.js (shared with the payment server in /api).
 
+// Progress bar across the top of the booking flow.
+const STEP_NAMES = ['Price', 'Schedule', 'Payment', 'Confirm'];
+const BookingSteps = ({ current }) => (
+  <ol className="booking-steps" aria-label="Booking progress">
+    {STEP_NAMES.map((name, i) => {
+      const n = i + 1;
+      const state = n < current ? 'done' : n === current ? 'current' : 'upcoming';
+      return (
+        <li key={name} className={`booking-step is-${state}`} aria-current={state === 'current' ? 'step' : undefined}>
+          <span className="booking-step-dot">{n < current ? '✓' : n}</span>
+          <span className="booking-step-name">{name}</span>
+        </li>
+      );
+    })}
+  </ol>
+);
+
+// Simple route drawing shown before a price is calculated.
+const RoutePreview = ({ busy }) => (
+  <svg className={`route-preview${busy ? ' is-busy' : ''}`} viewBox="0 0 240 120" aria-hidden="true" focusable="false">
+    <path className="route-preview-road" d="M30 90 C 80 90, 80 30, 130 30 S 190 70, 210 30" />
+    <circle className="route-preview-stop" cx="30" cy="90" r="9" />
+    <circle className="route-preview-stop" cx="210" cy="30" r="9" />
+  </svg>
+);
+
 // When Stripe sends the customer back, the address bar has ?payment=success
 // (with a session_id) or ?payment=cancelled.
 const readStripeReturn = () => {
@@ -275,10 +301,10 @@ function BookingCalculator({ onNavigate }) {
   const renderQuoteCalculator = () => (
     <div className="booking-container">
       <div className="calculator-panel">
-        <h2 className="panel-title">1. Get Your Ride Quote</h2>
+        <h2 className="panel-title">Where are you headed?</h2>
 
         <div className="form-group">
-            <label>Pick Up Location</label>
+            <label>Pickup location</label>
             <LocationSearch
                 placeholder="e.g., Cornell University, Ithaca, NY"
                 value={formData.pickup}
@@ -292,7 +318,7 @@ function BookingCalculator({ onNavigate }) {
         </div>
         
         <div className="form-group">
-            <label>Drop Off Location</label>
+            <label>Drop-off location</label>
             <LocationSearch
                 placeholder="e.g., JFK Airport, Rochester, NY"
                 value={formData.dropoff}
@@ -307,7 +333,7 @@ function BookingCalculator({ onNavigate }) {
 
         <div className="form-row">
             <div className="form-group half-width">
-                <label htmlFor="date">Date (Availability Check)</label>
+                <label htmlFor="date">Date</label>
                 <select 
                     id="date" name="date" value={formData.date} onChange={handleInputChange} required
                 >
@@ -326,7 +352,7 @@ function BookingCalculator({ onNavigate }) {
         </div>
 
         <div className="form-group">
-            <label htmlFor="riders">Number of Riders</label>
+            <label htmlFor="riders">Riders</label>
             <select id="riders" name="riders" value={formData.riders} onChange={handleInputChange}>
                 {[1, 2, 3, 4, 5, 6].map(num => (
                     <option key={num} value={num}>{num} Rider{num > 1 ? 's' : ''}</option>
@@ -337,20 +363,21 @@ function BookingCalculator({ onNavigate }) {
         {error && <p className="error-message">{error}</p>}
         
         <button className="quote-btn large" onClick={calculateQuote} disabled={isCalculating}>
-          {isCalculating ? 'CALCULATING...' : 'CALCULATE ESTIMATE'}
+          {isCalculating ? 'Calculating…' : 'Get my price'}
         </button>
       </div>
 
       <div className="quote-results-panel">
-        <h2 className="panel-title">Route Preview & Estimate</h2>
+        <h2 className="panel-title">Your price</h2>
         
         {isCalculating ? (
           <div className="map-placeholder-box">
-            <p className="preview-message">Calculating driving distance via live routing...</p>
+            <RoutePreview busy />
+            <p className="preview-message">Working out the driving distance…</p>
           </div>
         ) : quote ? (
           <div className="quote-display">
-            <p className="quote-price-label">Total Price</p>
+            <p className="quote-price-label">Total price</p>
             <p className="quote-price">${quote.price}<span className="currency"> USD</span></p>
             <p className="quote-total-line"><strong>Price per rider:</strong> ${(quote.price / formData.riders).toFixed(2)} USD</p>
 
@@ -362,12 +389,12 @@ function BookingCalculator({ onNavigate }) {
                 <p><strong>Pricing:</strong> {quote.details}</p>
             </div>
             
-            <button className="book-btn" onClick={handleBook}>PROCEED TO SCHEDULE</button>
+            <button className="book-btn" onClick={handleBook}>Continue to scheduling</button>
           </div>
         ) : (
           <div className="map-placeholder-box">
-            <img src="/map-placeholder.png" alt="Map Preview" className="map-preview-image" />
-            <p className="preview-message">Enter your trip details above to calculate distance and receive an instant quote.</p>
+            <RoutePreview />
+            <p className="preview-message">Enter your pickup, drop-off and time to see your price instantly.</p>
           </div>
         )}
       </div>
@@ -377,21 +404,21 @@ function BookingCalculator({ onNavigate }) {
   // UI for the Scheduling Step (Step 2)
   const renderScheduleRide = () => (
     <div className="schedule-payment-container">
-        <h2 className="panel-title">2. Schedule Your Ride</h2>
+        <h2 className="panel-title">Schedule your ride</h2>
         <div className="back-link" onClick={() => { setCalendlyConfirmed(false); setStep(1); }}>&larr; Back to Quote</div>
 
         <div className="schedule-details">
             <div className="detail-card">
-                <h3>Trip Summary</h3>
+                <h3>Trip summary</h3>
                 <p><strong>From:</strong> {formData.pickup}</p>
                 <p><strong>To:</strong> {formData.dropoff}</p>
                 <p><strong>Date/Time:</strong> {new Date(formData.date).toLocaleDateString()} at {formData.time}</p>
                 <p><strong>Riders:</strong> {formData.riders}</p>
-                <p className="final-price"><strong>Total Cost:</strong> ${quote.price} USD</p>
+                <p className="final-price"><strong>Total cost:</strong> ${quote.price} USD</p>
             </div>
 
             <div className="payment-placeholder-card schedule-card">
-                <h3>Select Final Time &amp; Driver</h3>
+                <h3>Pick your time and driver</h3>
                 <p className="subtext">
                     Pick a slot below to book your driver. The proceed button unlocks automatically as soon as Calendly confirms your reservation.
                 </p>
@@ -419,7 +446,7 @@ function BookingCalculator({ onNavigate }) {
                     aria-disabled={!calendlyConfirmed}
                     title={!calendlyConfirmed ? 'Finish your Calendly booking first' : ''}
                 >
-                    PROCEED TO PAYMENT
+                    Continue to payment
                 </button>
             </div>
         </div>
@@ -429,24 +456,24 @@ function BookingCalculator({ onNavigate }) {
   // UI for the Payment Step (Step 3) - Payment Method Selection
   const renderPaymentMethodSelection = () => (
     <div className="schedule-payment-container">
-        <h2 className="panel-title">3. Select Payment Method</h2>
-        <div className="back-link" onClick={() => setStep(2)}>&larr; Back to Scheduling</div>
+        <h2 className="panel-title">Choose how to pay</h2>
+        <div className="back-link" onClick={() => setStep(2)}>&larr; Back to scheduling</div>
         
         <div className="schedule-details">
             <div className="detail-card">
-                <h3>Trip Summary</h3>
+                <h3>Trip summary</h3>
                 <p><strong>From:</strong> {formData.pickup}</p>
                 <p><strong>To:</strong> {formData.dropoff}</p>
                 <p><strong>Date/Time:</strong> {new Date(formData.date).toLocaleDateString()} at {formData.time}</p>
                 <p><strong>Riders:</strong> {formData.riders}</p>
-                <p className="final-price"><strong>Total Cost:</strong> ${quote.price} USD</p>
+                <p className="final-price"><strong>Total cost:</strong> ${quote.price} USD</p>
                 <p className="card-fee-note">
                     Note: paying by card (online or with the driver) adds a 3% processing fee. Cash avoids the fee.
                 </p>
             </div>
 
             <div className="payment-method-selection-card">
-                <h3>How Would You Like to Pay?</h3>
+                <h3>How would you like to pay?</h3>
                 <p className="subtext">
                     Choose your preferred payment method to secure your booking.
                 </p>
@@ -458,7 +485,7 @@ function BookingCalculator({ onNavigate }) {
                     >
                         <div className="payment-option-icon">💵</div>
                         <div className="payment-option-text">
-                            <strong>Pay in Person</strong>
+                            <strong>Pay in person</strong>
                             <p>Cash or card with the driver. Total ${quote.price} cash, or ${cardTotal(quote.price)} on card (+3%)</p>
                         </div>
                     </button>
@@ -470,7 +497,7 @@ function BookingCalculator({ onNavigate }) {
                     >
                         <div className="payment-option-icon">💳</div>
                         <div className="payment-option-text">
-                            <strong>Pay Online by Card</strong>
+                            <strong>Pay online by card</strong>
                             <p>Secure checkout by Stripe. Total ${cardTotal(quote.price)} (includes 3% card fee)</p>
                         </div>
                     </button>
@@ -483,23 +510,23 @@ function BookingCalculator({ onNavigate }) {
   // UI for Step 4 - Payment Processing or Confirmation
   const renderPaymentProcessing = () => (
     <div className="schedule-payment-container">
-        <h2 className="panel-title">4. Complete Your Booking</h2>
+        <h2 className="panel-title">Complete your booking</h2>
         {!emailSubmitted && (
-            <div className="back-link" onClick={() => setStep(3)}>&larr; Back to Payment Method</div>
+            <div className="back-link" onClick={() => setStep(3)}>&larr; Back to payment method</div>
         )}
         
         <div className="schedule-details">
             <div className="detail-card">
-                <h3>Trip Summary</h3>
+                <h3>Trip summary</h3>
                 <p><strong>From:</strong> {formData.pickup}</p>
                 <p><strong>To:</strong> {formData.dropoff}</p>
                 <p><strong>Date/Time:</strong> {new Date(formData.date).toLocaleDateString()} at {formData.time}</p>
                 <p><strong>Riders:</strong> {formData.riders}</p>
-                <p className="final-price"><strong>Total Cost:</strong> ${quote.price} USD</p>
+                <p className="final-price"><strong>Total cost:</strong> ${quote.price} USD</p>
             </div>
             
             <div className="payment-placeholder-card">
-                <h3>Payment & Confirmation</h3>
+                <h3>Payment and confirmation</h3>
                 <p className="subtext">
                     {paymentMethod === 'pay-card' ? "You'll be taken to Stripe's secure checkout page to pay by card. We never see or store your card details." :
                      "Enter your email and we'll send your booking confirmation. You'll pay the driver when they arrive."}
@@ -519,14 +546,14 @@ function BookingCalculator({ onNavigate }) {
                             onClick={startStripeCheckout}
                             disabled={checkoutLoading}
                         >
-                            {checkoutLoading ? 'OPENING SECURE CHECKOUT…' : `PAY $${cardTotal(quote.price)} SECURELY`}
+                            {checkoutLoading ? 'Opening secure checkout…' : `Pay $${cardTotal(quote.price)} securely`}
                         </button>
                     </div>
                 )}
 
                 {paymentMethod === 'pay-person' && !emailSubmitted && (
                     <form className="email-capture-form" onSubmit={handleEmailSubmit}>
-                        <h4>💵 Pay in Person</h4>
+                        <h4>💵 Pay in person</h4>
                         <p className="subtext">
                             Enter your email so we can send your booking confirmation, driver details, and tracking link.
                         </p>
@@ -541,7 +568,7 @@ function BookingCalculator({ onNavigate }) {
                             autoComplete="email"
                         />
                         <button type="submit" className="book-btn pretty-btn">
-                            CONFIRM BOOKING &amp; SEND CONFIRMATION
+                            Confirm booking
                         </button>
                     </form>
                 )}
@@ -549,10 +576,10 @@ function BookingCalculator({ onNavigate }) {
                 {paymentMethod === 'pay-person' && emailSubmitted && (
                     <div className="in-person-payment-confirmation">
                         <div className="confirmation-box">
-                            <h4>💵 Pay in Person</h4>
+                            <h4>💵 Pay in person</h4>
                             <p>Your booking is confirmed! Please have ${quote.price} USD ready in cash, or ${cardTotal(quote.price)} if paying by card (+3% fee), when the driver arrives.</p>
                             <p className="confirmation-details">
-                                <strong>Booking Reference:</strong> {bookingRef}
+                                <strong>Booking reference:</strong> {bookingRef}
                             </p>
                             <p className="confirmation-details">
                                 A confirmation email has been sent to <strong>{email}</strong> with your driver details and tracking information.
@@ -560,13 +587,13 @@ function BookingCalculator({ onNavigate }) {
                         </div>
                         <div className="confirmation-actions">
                             <button className="book-btn confirmation-btn" onClick={() => onNavigate('home')}>
-                                Return to Homepage
+                                Back to homepage
                             </button>
                             <button className="book-btn confirmation-btn close-tab-btn" onClick={handleCloseTab}>
-                                Close Tab
+                                Close tab
                             </button>
                             <button className="book-btn confirmation-btn cancel-booking-btn" onClick={handleCancelBooking}>
-                                Cancel Booking
+                                Cancel booking
                             </button>
                         </div>
                         {showCloseHint && (
@@ -591,7 +618,7 @@ function BookingCalculator({ onNavigate }) {
   // UI for Step 5 - back from Stripe after paying online
   const renderPaymentResult = () => (
     <div className="schedule-payment-container">
-        <h2 className="panel-title">Payment Received</h2>
+        <h2 className="panel-title">Payment received</h2>
         <div className="schedule-details">
             <div className="payment-placeholder-card">
                 {!paidBooking && !paidBookingError && (
@@ -606,9 +633,9 @@ function BookingCalculator({ onNavigate }) {
                 )}
                 {paidBooking && paidBooking.paid && (
                     <div className="confirmation-box">
-                        <h4>💳 Paid Online, You're All Set!</h4>
+                        <h4>💳 Paid online. You're all set!</h4>
                         <p>Thank you! We received your payment of <strong>${paidBooking.amountTotal.toFixed(2)} USD</strong>.</p>
-                        <p className="confirmation-details"><strong>Booking Reference:</strong> {paidBooking.reference}</p>
+                        <p className="confirmation-details"><strong>Booking reference:</strong> {paidBooking.reference}</p>
                         <p className="confirmation-details"><strong>From:</strong> {paidBooking.pickup}</p>
                         <p className="confirmation-details"><strong>To:</strong> {paidBooking.dropoff}</p>
                         <p className="confirmation-details">
@@ -628,7 +655,7 @@ function BookingCalculator({ onNavigate }) {
                 )}
                 <div className="confirmation-actions">
                     <button className="book-btn confirmation-btn" onClick={() => onNavigate('home')}>
-                        Return to Homepage
+                        Back to homepage
                     </button>
                 </div>
             </div>
@@ -638,7 +665,8 @@ function BookingCalculator({ onNavigate }) {
 
   return (
     <div className="booking-page-wrapper">
-        <h1 className="booking-page-header">Book Your SafeRide Shuttle</h1>
+        <h1 className="booking-page-header">Book your SafeRide</h1>
+        {step <= 4 && <BookingSteps current={step} />}
         {step === 1 && stripeReturn.status === 'cancelled' && (
             <p className="error-message">Your online payment was cancelled and you have not been charged. You can start your booking again below.</p>
         )}
@@ -647,7 +675,7 @@ function BookingCalculator({ onNavigate }) {
         {step === 3 && renderPaymentMethodSelection()}
         {step === 4 && renderPaymentProcessing()}
         {step === 5 && renderPaymentResult()}
-        <button className="back-home-btn" onClick={() => onNavigate('home')}>&larr; Return to Homepage</button>
+        <button className="back-home-btn" onClick={() => onNavigate('home')}>&larr; Back to homepage</button>
     </div>
   );
 }
