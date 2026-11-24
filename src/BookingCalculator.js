@@ -1,99 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import LocationSearch from './LocationSearch';
 import { calculateDistance, geocodeAddress } from './mapsUtils';
-
-// --- Square Payment Integration Component ---
-// This simulates the Square payment form being dynamically loaded and rendered.
-const SquarePaymentForm = ({ price }) => {
-    // NOTE: These are MOCK IDs. Your company must replace these with their actual Sandbox or Production IDs.
-    const SQUARE_APP_ID = 'sq0idp-MOCK-APP-ID-12345';
-    const SQUARE_LOCATION_ID = 'MOCK_LOCATION_ID_54321';
-
-    useEffect(() => {
-        const initializeSquare = () => {
-            if (!window.SqPaymentForm) {
-                console.error("Square SDK not loaded. Check index.html script tag.");
-                return;
-            }
-
-            const fieldStyle = {
-                input: {
-                    fontSize: '14px',
-                    padding: '8px 12px',
-                    color: '#333',
-                },
-            };
-
-            // eslint-disable-next-line no-unused-vars
-            const paymentForm = new window.SqPaymentForm({
-                applicationId: SQUARE_APP_ID,
-                locationId: SQUARE_LOCATION_ID,
-                
-                // Define the IDs of the HTML elements where the secure fields will be injected
-                cardNumber: { elementId: 'sq-card-number', style: fieldStyle },
-                cvv: { elementId: 'sq-cvv', style: fieldStyle },
-                expirationDate: { elementId: 'sq-expiration-date', style: fieldStyle },
-                postalCode: { elementId: 'sq-postal-code', style: fieldStyle },
-                
-                callbacks: {
-                    /*
-                    NOTE: In a real app, this is where you would handle the tokenization (payment submission).
-                    */
-                    cardNonceResponseReceived: function(errors, nonce, cardData) {
-                        if (errors) {
-                            console.error("Payment tokenization failed:", errors);
-                            alert(`Error processing card: ${errors[0].message}`);
-                            return;
-                        }
-                        console.log("SUCCESS! Payment Nonce generated (Ready for backend processing):", nonce);
-                        alert(`Booking Confirmed! (Mock Payment Nonce: ${nonce})`);
-                    },
-                    unsupportedBrowserDetected: function() {
-                        console.error("Browser unsupported by Square SDK.");
-                    },
-                    paymentFormLoaded: function() {
-                        console.log("Square Payment Form fields loaded successfully.");
-                    }
-                }
-            });
-        };
-        
-        if (window.SqPaymentForm) {
-            initializeSquare();
-        } else {
-            const checkScript = setInterval(() => {
-                if (window.SqPaymentForm) {
-                    clearInterval(checkScript);
-                    initializeSquare();
-                }
-            }, 100);
-        }
-    }, [price]);
-
-    return (
-        <div className="square-placeholder">
-            <p style={{fontSize: '0.85rem', color: '#2F3691', fontWeight: 'bold', marginBottom: '10px'}}>
-                (Secure Payment Fields are loading from Square's Servers)
-            </p>
-            <div className="square-form-mock">
-                
-                {/* These are the containers where Square will inject its secure iframes */}
-                <div id="sq-card-number"></div>
-                <div id="sq-expiration-date"></div>
-                <div id="sq-cvv"></div>
-                <div id="sq-postal-code"></div>
-
-                <button 
-                    className="square-pay-btn"
-                    onClick={() => console.log("Simulating Square payment initiation...")}
-                >
-                    Complete Booking: Pay ${price}
-                </button>
-            </div>
-        </div>
-    );
-};
-// End of SquarePaymentForm component
+import { MIN_TRIP_MILES, CARD_FEE_RATE, computeQuote, cardTotal, cardFee } from './pricing';
 
 // --- Mock Availability Logic ---
 const getAvailableDates = () => {
@@ -110,37 +18,21 @@ const getAvailableDates = () => {
 // Calendly scheduling
 const CALENDLY_URL = 'https://calendly.com/hirschpaula88/30min';
 
-// Cornell University Rate Card pricing
-const MIN_TRIP_MILES = 2;              // shortest bookable trip
-const COST_PER_MILE_LONG_TRIP = 2.00; // one-way; "Special Long Trips"
-const SURGE_FEE = 20;                  // 8PM–8AM surcharge
-const CARD_FEE_RATE = 0.03;            // 3% credit-card processing fee
-const FLAT_RATES = {
-  syracuse_ithaca:  { solo: 120, perRiderShared: 90 },
-  rochester_ithaca: { solo: 250, perRiderShared: 150 },
-};
+// Prices live in ./pricing.js (shared with the payment server in /api).
 
-const classifyTrip = (pickup, dropoff) => {
-  const a = (pickup || '').toLowerCase();
-  const b = (dropoff || '').toLowerCase();
-  const isIthaca    = (s) => s.includes('cornell')  || s.includes('ithaca');
-  const isSyracuse  = (s) => s.includes('syracuse') || s.includes('hancock');
-  const isRochester = (s) => s.includes('rochester');
-  if ((isSyracuse(a)  && isIthaca(b)) || (isSyracuse(b)  && isIthaca(a))) return 'syracuse_ithaca';
-  if ((isRochester(a) && isIthaca(b)) || (isRochester(b) && isIthaca(a))) return 'rochester_ithaca';
-  return 'long_trip';
+// When Stripe sends the customer back, the address bar has ?payment=success
+// (with a session_id) or ?payment=cancelled.
+const readStripeReturn = () => {
+  const params = new URLSearchParams(window.location.search);
+  return { status: params.get('payment'), sessionId: params.get('session_id') };
 };
-
-// Surge applies if pickup time is between 8PM (20:00) and 8AM (08:00)
-const isSurgeTime = (timeStr) => {
-  const hour = parseInt((timeStr || '').split(':')[0], 10);
-  return Number.isFinite(hour) && (hour < 8 || hour >= 20);
-};
-
 
 function BookingCalculator({ onNavigate }) {
   const availableDates = getAvailableDates();
-  const [step, setStep] = useState(1); 
+  const [stripeReturn] = useState(readStripeReturn);
+  const [step, setStep] = useState(
+    stripeReturn.status === 'success' && stripeReturn.sessionId ? 5 : 1
+  );
   const [formData, setFormData] = useState({
     pickup: '',
     dropoff: '',
@@ -160,6 +52,57 @@ function BookingCalculator({ onNavigate }) {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [bookingRef, setBookingRef] = useState('');
   const [showCloseHint, setShowCloseHint] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const [paidBooking, setPaidBooking] = useState(null);
+  const [paidBookingError, setPaidBookingError] = useState('');
+
+  // Clean ?payment=... out of the address bar so a refresh starts fresh.
+  useEffect(() => {
+    if (stripeReturn.status) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, [stripeReturn.status]);
+
+  // Back from Stripe after paying: ask our server to confirm with Stripe.
+  useEffect(() => {
+    if (stripeReturn.status !== 'success' || !stripeReturn.sessionId) return;
+    fetch(`/api/checkout-status?session_id=${encodeURIComponent(stripeReturn.sessionId)}`)
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || 'We could not confirm your payment.');
+        setPaidBooking(data);
+      })
+      .catch((err) => setPaidBookingError(err.message));
+  }, [stripeReturn.status, stripeReturn.sessionId]);
+
+  // "Pay online" clicked: ask our server for a Stripe checkout page, then go there.
+  const startStripeCheckout = async () => {
+    setCheckoutLoading(true);
+    setCheckoutError('');
+    try {
+      const r = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pickup: { ...quote.origin, address: formData.pickup },
+          dropoff: { ...quote.destination, address: formData.dropoff },
+          date: formData.date,
+          time: formData.time,
+          riders: formData.riders,
+          expectedPrice: quote.price,
+          calendlyInviteeUuid,
+        }),
+      });
+      const data = await r.json().catch(() => null);
+      if (!data) throw new Error("Online payment isn't available right now. Please choose Pay in Person.");
+      if (!r.ok || !data.url) throw new Error(data.error || 'Could not start the payment. Please try again.');
+      window.location.assign(data.url);
+    } catch (err) {
+      setCheckoutError(err.message);
+      setCheckoutLoading(false);
+    }
+  };
 
   const handleEmailSubmit = (e) => {
     e.preventDefault();
@@ -291,42 +234,22 @@ function BookingCalculator({ onNavigate }) {
       if (distanceMiles < MIN_TRIP_MILES) {
         throw new Error(`Trips must be at least ${MIN_TRIP_MILES} miles. This route is only ${distanceMiles} miles, please choose a longer trip.`);
       }
-      const numRiders = parseInt(formData.riders, 10) || 1;
-
-      const tripType = classifyTrip(origin.address || pickup, destination.address || dropoff);
-
-      let basePrice;
-      let pricingDetails;
-      if (tripType === 'syracuse_ithaca' || tripType === 'rochester_ithaca') {
-        const rates = FLAT_RATES[tripType];
-        const routeName = tripType === 'syracuse_ithaca'
-          ? 'Syracuse Hancock ↔ Cornell/Ithaca'
-          : 'Rochester ↔ Cornell/Ithaca';
-        if (numRiders === 1) {
-          basePrice = rates.solo;
-          pricingDetails = `${routeName}: $${rates.solo} flat rate (solo)`;
-        } else {
-          basePrice = rates.perRiderShared * numRiders;
-          pricingDetails = `${routeName} shared: $${rates.perRiderShared}/rider × ${numRiders} riders`;
-        }
-      } else {
-        basePrice = Math.round(distanceMiles * COST_PER_MILE_LONG_TRIP);
-        pricingDetails = `Long trip: ${distanceMiles} miles × $${COST_PER_MILE_LONG_TRIP.toFixed(2)}/mile${result.fallback ? ' (straight-line estimate)' : ''}`;
-      }
-
-      const surge = isSurgeTime(formData.time) ? SURGE_FEE : 0;
-      const estimatedPrice = basePrice + surge;
-      const details = surge > 0
-        ? `${pricingDetails}; +$${SURGE_FEE} late-night surcharge (8PM–8AM)`
-        : pricingDetails;
+      const priced = computeQuote({
+        distanceMiles,
+        origin,
+        destination,
+        time: formData.time,
+        riders: formData.riders,
+        fallback: result.fallback,
+      });
 
       setQuote({
-        price: estimatedPrice,
+        ...priced,
         distance: distanceMiles,
         duration: result.duration,
-        details,
-        tripType,
-        surge,
+        // Exact map points, sent to the payment server so it can re-check the price.
+        origin: { lat: origin.lat, lng: origin.lng },
+        destination: { lat: destination.lat, lng: destination.lng },
       });
     } catch (err) {
       setError(`Could not calculate route: ${err.message}. Please check your locations and try again.`);
@@ -518,7 +441,7 @@ function BookingCalculator({ onNavigate }) {
                 <p><strong>Riders:</strong> {formData.riders}</p>
                 <p className="final-price"><strong>Total Cost:</strong> ${quote.price} USD</p>
                 <p className="card-fee-note">
-                    Note: paying the driver by card adds a 3% processing fee. Cash avoids the fee.
+                    Note: paying by card (online or with the driver) adds a 3% processing fee. Cash avoids the fee.
                 </p>
             </div>
 
@@ -536,24 +459,19 @@ function BookingCalculator({ onNavigate }) {
                         <div className="payment-option-icon">💵</div>
                         <div className="payment-option-text">
                             <strong>Pay in Person</strong>
-                            <p>Cash or card with the driver. Total ${quote.price} cash, or ${(quote.price * (1 + CARD_FEE_RATE)).toFixed(2)} on card (+3%)</p>
+                            <p>Cash or card with the driver. Total ${quote.price} cash, or ${cardTotal(quote.price)} on card (+3%)</p>
                         </div>
                     </button>
 
                     <button
                         type="button"
-                        className="payment-option-btn payment-option-disabled"
-                        onClick={(e) => e.preventDefault()}
-                        disabled
-                        aria-disabled="true"
-                        title="Online payment is not available yet"
+                        className="payment-option-btn"
+                        onClick={() => handlePaymentMethodSelection('pay-card')}
                     >
                         <div className="payment-option-icon">💳</div>
                         <div className="payment-option-text">
-                            <strong>
-                                Pay Online <span className="coming-soon-badge">COMING SOON</span>
-                            </strong>
-                            <p>Online card checkout isn't live yet, please choose Pay in Person.</p>
+                            <strong>Pay Online by Card</strong>
+                            <p>Secure checkout by Stripe. Total ${cardTotal(quote.price)} (includes 3% card fee)</p>
                         </div>
                     </button>
                 </div>
@@ -583,21 +501,29 @@ function BookingCalculator({ onNavigate }) {
             <div className="payment-placeholder-card">
                 <h3>Payment & Confirmation</h3>
                 <p className="subtext">
-                    {paymentMethod === 'pay-card' ? "Pay online with the secure card form below to confirm your booking." :
+                    {paymentMethod === 'pay-card' ? "You'll be taken to Stripe's secure checkout page to pay by card. We never see or store your card details." :
                      "Enter your email and we'll send your booking confirmation. You'll pay the driver when they arrive."}
                 </p>
 
                 {paymentMethod === 'pay-card' && (
-                    <>
+                    <div className="stripe-checkout-box">
                         <p className="subtext">
-                            Subtotal: ${quote.price.toFixed(2)} &nbsp;•&nbsp;
-                            Card processing (3%): ${(quote.price * CARD_FEE_RATE).toFixed(2)} &nbsp;•&nbsp;
-                            <strong>Total: ${(quote.price * (1 + CARD_FEE_RATE)).toFixed(2)}</strong>
+                            Trip: ${quote.price.toFixed(2)} &nbsp;•&nbsp;
+                            Card processing ({Math.round(CARD_FEE_RATE * 100)}%): ${cardFee(quote.price)} &nbsp;•&nbsp;
+                            <strong>Total: ${cardTotal(quote.price)}</strong>
                         </p>
-                        <SquarePaymentForm price={Number((quote.price * (1 + CARD_FEE_RATE)).toFixed(2))} />
-                    </>
+                        {checkoutError && <p className="error-message">{checkoutError}</p>}
+                        <button
+                            type="button"
+                            className="book-btn pretty-btn"
+                            onClick={startStripeCheckout}
+                            disabled={checkoutLoading}
+                        >
+                            {checkoutLoading ? 'OPENING SECURE CHECKOUT…' : `PAY $${cardTotal(quote.price)} SECURELY`}
+                        </button>
+                    </div>
                 )}
-                
+
                 {paymentMethod === 'pay-person' && !emailSubmitted && (
                     <form className="email-capture-form" onSubmit={handleEmailSubmit}>
                         <h4>💵 Pay in Person</h4>
@@ -624,7 +550,7 @@ function BookingCalculator({ onNavigate }) {
                     <div className="in-person-payment-confirmation">
                         <div className="confirmation-box">
                             <h4>💵 Pay in Person</h4>
-                            <p>Your booking is confirmed! Please have ${quote.price} USD ready in cash, or ${(quote.price * (1 + CARD_FEE_RATE)).toFixed(2)} if paying by card (+3% fee), when the driver arrives.</p>
+                            <p>Your booking is confirmed! Please have ${quote.price} USD ready in cash, or ${cardTotal(quote.price)} if paying by card (+3% fee), when the driver arrives.</p>
                             <p className="confirmation-details">
                                 <strong>Booking Reference:</strong> {bookingRef}
                             </p>
@@ -653,7 +579,7 @@ function BookingCalculator({ onNavigate }) {
                 
                 {paymentMethod === 'pay-card' && (
                     <p className="subtext">
-                        Upon successful payment, you will receive a confirmation email with driver and tracking details.
+                        After you pay, you'll come back here to see your confirmation, and Stripe will email you a receipt.
                     </p>
                 )}
             </div>
@@ -662,48 +588,65 @@ function BookingCalculator({ onNavigate }) {
     </div>
   );
 
-  // UI for the Payment Step (Step 3)
-  const renderSchedulePayment = () => (
+  // UI for Step 5 - back from Stripe after paying online
+  const renderPaymentResult = () => (
     <div className="schedule-payment-container">
-        <h2 className="panel-title">3. Secure Payment</h2>
-        <div className="back-link" onClick={() => setStep(2)}>&larr; Back to Scheduling</div>
-
+        <h2 className="panel-title">Payment Received</h2>
         <div className="schedule-details">
-            <div className="detail-card">
-                <h3>Trip Summary</h3>
-                <p><strong>From:</strong> {formData.pickup}</p>
-                <p><strong>To:</strong> {formData.dropoff}</p>
-                <p><strong>Date/Time:</strong> {new Date(formData.date).toLocaleDateString()} at {formData.time}</p>
-                <p><strong>Riders:</strong> {formData.riders}</p>
-                <p className="final-price"><strong>Total Cost:</strong> ${quote.price} USD</p>
-            </div>
-            
             <div className="payment-placeholder-card">
-                <h3>Secure Payment & Confirmation</h3>
-                <p className="subtext">
-                    Please use the secure form below to complete your payment and confirm your booking.
-                    (Your payment is processed by Square, ensuring security.)
-                </p>
-                
-                <SquarePaymentForm price={quote.price} />
-                
-                <p className="subtext">
-                    Upon successful payment, you will receive a confirmation email with driver and tracking details.
-                </p>
+                {!paidBooking && !paidBookingError && (
+                    <p className="subtext">Confirming your payment with Stripe…</p>
+                )}
+                {paidBookingError && (
+                    <div className="confirmation-box">
+                        <h4>We couldn't confirm your payment yet</h4>
+                        <p>{paidBookingError}</p>
+                        <p>If you were charged, your booking is safe. Please contact SafeRide and we'll sort it out.</p>
+                    </div>
+                )}
+                {paidBooking && paidBooking.paid && (
+                    <div className="confirmation-box">
+                        <h4>💳 Paid Online, You're All Set!</h4>
+                        <p>Thank you! We received your payment of <strong>${paidBooking.amountTotal.toFixed(2)} USD</strong>.</p>
+                        <p className="confirmation-details"><strong>Booking Reference:</strong> {paidBooking.reference}</p>
+                        <p className="confirmation-details"><strong>From:</strong> {paidBooking.pickup}</p>
+                        <p className="confirmation-details"><strong>To:</strong> {paidBooking.dropoff}</p>
+                        <p className="confirmation-details">
+                            <strong>Date/Time:</strong> {paidBooking.date ? new Date(paidBooking.date).toLocaleDateString() : ''} at {paidBooking.time}
+                            {' '}&nbsp;•&nbsp; <strong>Riders:</strong> {paidBooking.riders}
+                        </p>
+                        {paidBooking.email && (
+                            <p className="confirmation-details">A receipt has been sent to <strong>{paidBooking.email}</strong>.</p>
+                        )}
+                    </div>
+                )}
+                {paidBooking && !paidBooking.paid && (
+                    <div className="confirmation-box">
+                        <h4>Payment not completed</h4>
+                        <p>It looks like the payment didn't go through, so you haven't been charged. Please try booking again.</p>
+                    </div>
+                )}
+                <div className="confirmation-actions">
+                    <button className="book-btn confirmation-btn" onClick={() => onNavigate('home')}>
+                        Return to Homepage
+                    </button>
+                </div>
             </div>
         </div>
-        
     </div>
   );
-
 
   return (
     <div className="booking-page-wrapper">
         <h1 className="booking-page-header">Book Your SafeRide Shuttle</h1>
+        {step === 1 && stripeReturn.status === 'cancelled' && (
+            <p className="error-message">Your online payment was cancelled and you have not been charged. You can start your booking again below.</p>
+        )}
         {step === 1 && renderQuoteCalculator()}
         {step === 2 && renderScheduleRide()}
         {step === 3 && renderPaymentMethodSelection()}
         {step === 4 && renderPaymentProcessing()}
+        {step === 5 && renderPaymentResult()}
         <button className="back-home-btn" onClick={() => onNavigate('home')}>&larr; Return to Homepage</button>
     </div>
   );
