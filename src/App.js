@@ -4,7 +4,10 @@ import BookingCalculator from './BookingCalculator';
 
 // Using a component-based approach with conditional rendering
 function App() {
-  const [currentPage, setCurrentPage] = React.useState('home');
+  // Open the booking page straight away when Stripe sends a customer back (?payment=...).
+  const [currentPage, setCurrentPage] = React.useState(
+    () => (new URLSearchParams(window.location.search).has('payment') ? 'booking' : 'home')
+  );
 
   // Function to handle navigation
   const navigateTo = (page) => {
